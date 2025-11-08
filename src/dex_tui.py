@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Header, Footer, Input, Static
-from backend import get_dex_entry
+from .backend import get_dex_entry
 
 __version__ = "0.1.0"
 
@@ -58,9 +58,3 @@ class DexTUI(App):
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
         self.dark = not self.dark
-
-
-if __name__ == "__main__":
-    app = DexTUI()
-    app.theme = "gruvbox"
-    app.run()

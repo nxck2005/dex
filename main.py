@@ -1,6 +1,5 @@
-def main():
-    print("Boop")
-
+from src.dex_tui import DexTUI
 
 if __name__ == "__main__":
-    main()
+    app = DexTUI()
+    app.run()
