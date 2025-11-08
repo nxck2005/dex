@@ -4,7 +4,6 @@ import random
 BASE_URL = "https://pokeapi.co/api/v2/pokemon"
 
 def _sanitize_input(name_or_id: str) -> str:
-    """Sanitizes the input string for the PokeAPI."""
     name = name_or_id.lower()
     if "mega " in name:
         parts = name.split(" ")
@@ -12,7 +11,6 @@ def _sanitize_input(name_or_id: str) -> str:
     return name.replace(" ", "-")
 
 async def get_all_pokemon() -> list[dict]:
-    """Fetches the list of all Pokémon from the PokeAPI."""
     url = f"{BASE_URL}?limit=10000"
     try:
         async with httpx.AsyncClient() as client:
