@@ -1,9 +1,11 @@
+import os
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Header, Footer, Input, Static
 from .backend import get_dex_entry
 
 __version__ = "0.1.0"
+_current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class DexEntryInfo(Static):
     """A widget to display dex entry information."""
@@ -35,7 +37,7 @@ class DexTUI(App):
     """A Textual Dex app."""
 
     TITLE = f"dex v{__version__}"
-    CSS_PATH = "dex.css"
+    CSS_PATH = os.path.join(_current_dir, "static", "dex.css")
     BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
 
     def compose(self) -> ComposeResult:
