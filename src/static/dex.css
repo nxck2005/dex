@@ -8,22 +8,27 @@ Header, Footer {
     color: $text;
 }
 
-Container {
-    align: center middle;
-    padding: 2;
+Input {
+    width: 100%;
+    margin-bottom: 1;
 }
 
-Input {
-    width: 50%;
-    margin-bottom: 1;
-    background: $surface;
-    border: round $panel;
+Horizontal {
+    layout: horizontal;
+    width: 100%;
+    height: 100%;
 }
 
 DexEntryInfo {
     width: 50%;
-    height: auto;
-    background: $surface;
+    height: 100%;
+    border: round $panel;
+    padding: 1;
+}
+
+DataTable {
+    width: 50%;
+    height: 100%;
     border: round $panel;
     padding: 1;
 }

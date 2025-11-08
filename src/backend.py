@@ -11,6 +11,18 @@ def _sanitize_input(name_or_id: str) -> str:
         return f"{parts[1]}-mega"
     return name.replace(" ", "-")
 
+async def get_all_pokemon() -> list[dict]:
+    """Fetches the list of all Pokémon from the PokeAPI."""
+    url = f"{BASE_URL}?limit=10000"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+            response.raise_for_status()
+            data = response.json()
+            return data["results"]
+    except (httpx.HTTPStatusError, httpx.RequestError):
+        return []
+
 async def get_dex_entry(name_or_id: str) -> dict:
     """
     Fetches dex entry data from the PokeAPI.
@@ -23,7 +35,7 @@ async def get_dex_entry(name_or_id: str) -> dict:
     """
     if name_or_id == "1773":
         return {
-            "name": "Mafioso",
+            "name": "Definery",
             "id": 1773,
             "types": ["dark"],
             "abilities": ["thief"],
