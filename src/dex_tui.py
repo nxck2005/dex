@@ -14,12 +14,15 @@ class DexEntryInfo(Static):
             self.update(data["error"])
             return
 
+        height_m = data['height'] / 10.0
+        weight_kg = data['weight'] / 10.0
+
         info = (
             f"[bold]{data['name']} (#{data['id']})[/bold]\n\n"
             f"Types: {', '.join(data['types'])}\n"
             f"Abilities: {', '.join(data['abilities'])}\n"
-            f"Height: {data['height']}\n"
-            f"Weight: {data['weight']}\n\n"
+            f"Height: {height_m} m\n"
+            f"Weight: {weight_kg} kg\n\n"
             "[bold]Stats:[/bold]\n"
         )
         for stat, value in data["stats"].items():
