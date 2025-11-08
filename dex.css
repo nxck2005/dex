@@ -1,0 +1,29 @@
+Screen {
+    background: $background;
+    color: $text;
+}
+
+Header, Footer {
+    background: $primary;
+    color: $text;
+}
+
+Container {
+    align: center middle;
+    padding: 2;
+}
+
+Input {
+    width: 50%;
+    margin-bottom: 1;
+    background: $surface;
+    border: round $panel;
+}
+
+DexEntryInfo {
+    width: 50%;
+    height: auto;
+    background: $surface;
+    border: round $panel;
+    padding: 1;
+}
