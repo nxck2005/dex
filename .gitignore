@@ -50,6 +50,8 @@ venv.bak/
 !.vscode/launch.json
 !.vscode/extensions.json
 
+rules/
+
 # Thumbs.db, .DS_Store, etc.
 Thumbs.db
 .DS_Store

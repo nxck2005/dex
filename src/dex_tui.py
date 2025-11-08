@@ -4,14 +4,12 @@ from textual.containers import Horizontal
 from textual.widgets import Header, Footer, DataTable, Static, Input
 from .backend import get_dex_entry, get_all_pokemon
 
-__version__ = "0.1.0"
+__version__ = "0.2.1"
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class DexEntryInfo(Static):
-    """A widget to display dex entry information."""
 
     def update_info(self, data: dict):
-        """Update the displayed information."""
         if "error" in data:
             self.update(data["error"])
             return
@@ -34,8 +32,6 @@ class DexEntryInfo(Static):
 
 
 class DexTUI(App):
-    """A Textual Dex app."""
-
     TITLE = f"dex v{__version__}"
     CSS_PATH = os.path.join(_current_dir, "static", "dex.css")
     BINDINGS = [
@@ -47,7 +43,6 @@ class DexTUI(App):
         self.all_pokemon = []
 
     def compose(self) -> ComposeResult:
-        """Create child widgets for the app."""
         yield Header()
         yield Input(placeholder="Search for a Pokémon")
         yield Horizontal(
@@ -57,7 +52,6 @@ class DexTUI(App):
         yield Footer()
 
     async def on_mount(self) -> None:
-        """Called when the app is mounted."""
         table = self.query_one(DataTable)
         table.cursor_type = "row"
         table.add_columns("ID", "Name")
@@ -66,7 +60,6 @@ class DexTUI(App):
             table.add_row(i + 1, pokemon["name"].capitalize())
 
     async def on_input_changed(self, message: Input.Changed) -> None:
-        """Handle input changes to filter the table."""
         table = self.query_one(DataTable)
         search_term = message.value.lower()
         table.clear()
@@ -75,18 +68,26 @@ class DexTUI(App):
                 table.add_row(i + 1, pokemon["name"].capitalize())
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
-        """Handle input submission to select the top result."""
+        try:
+            num = int(message.value)
+            if num > 1025:
+                dex_entry_info = self.query_one(DexEntryInfo)
+                dex_entry_info.update("Loading...")
+                data = await get_dex_entry(str(num))
+                dex_entry_info.update_info(data)
+                return
+        except ValueError:
+            pass
+
         table = self.query_one(DataTable)
         if table.rows:
             table.move_cursor(row=0)
             await self.action_select_pokemon()
 
     async def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Handle data table row selection."""
         await self.action_select_pokemon()
 
     async def action_select_pokemon(self) -> None:
-        """Select a Pokémon from the table."""
         table = self.query_one(DataTable)
         if not table.rows:
             return

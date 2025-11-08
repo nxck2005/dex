@@ -3,15 +3,8 @@ import random
 
 BASE_URL = "https://pokeapi.co/api/v2/pokemon"
 
-def _sanitize_input(name_or_id: str) -> str:
-    name = name_or_id.lower()
-    if "mega " in name:
-        parts = name.split(" ")
-        return f"{parts[1]}-mega"
-    return name.replace(" ", "-")
-
 async def get_all_pokemon() -> list[dict]:
-    url = f"{BASE_URL}?limit=10000"
+    url = f"{BASE_URL}?limit=1025"
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
@@ -22,15 +15,6 @@ async def get_all_pokemon() -> list[dict]:
         return []
 
 async def get_dex_entry(name_or_id: str) -> dict:
-    """
-    Fetches dex entry data from the PokeAPI.
-
-    Args:
-        name_or_id: The name or ID of the entry to fetch.
-
-    Returns:
-        A dictionary containing the entry's data, or an error message.
-    """
     if name_or_id == "1773":
         return {
             "name": "Definery",
@@ -50,7 +34,11 @@ async def get_dex_entry(name_or_id: str) -> dict:
             "flavor_text": "sonned by all",
         }
 
-    sanitized_name = _sanitize_input(name_or_id)
+    sanitized_name = name_or_id.lower().replace(" ", "-")
+    if "mega-" in sanitized_name:
+        parts = sanitized_name.split("-")
+        sanitized_name = f"{parts[1]}-mega"
+
     url = f"{BASE_URL}/{sanitized_name}"
     try:
         async with httpx.AsyncClient() as client:
@@ -86,4 +74,3 @@ async def get_dex_entry(name_or_id: str) -> dict:
             return {"error": f"HTTP error: {e}"}
     except httpx.RequestError as e:
         return {"error": f"Network error: {e}"}
-
