@@ -45,7 +45,7 @@ async def get_pokemon_details(client: httpx.AsyncClient, pokemon_url: str) -> di
                 
                 # Generate ASCII art
                 image_data = io.BytesIO(sprite_response.content)
-                ascii_art = ascii_magic.from_image(image_data).to_ascii(columns=50)
+                ascii_art = ascii_magic.from_image(image_data).to_ascii(columns=50, enhance_image=True)
 
             except Exception as art_exc:
                 print(f"\nCould not generate art for {data['name']}: {type(art_exc).__name__} - {art_exc}")
