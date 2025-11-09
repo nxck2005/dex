@@ -1,3 +1,4 @@
 textual
 httpx
 textual-kitty
+textual-serve

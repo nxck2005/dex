@@ -1,3 +1,5 @@
+import os
+from textual_serve import Server
 from src.dex_tui import DexTUI
 import tomllib
 
@@ -12,7 +14,11 @@ def main() -> None:
     app = DexTUI()
     app.theme = "gruvbox"
     app.title = f"DexTUI v{version}"
-    app.run()
+
+    # Use textual-serve for web deployment
+    port = int(os.environ.get("PORT", 8080))
+    server = Server(app, port=port)
+    server.run()
 
 if __name__ == "__main__":
     main()

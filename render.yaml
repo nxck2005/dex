@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: dextui-web
+    env: python
+    buildCommand: uv pip install -r requirements.txt
+    startCommand: uv run main.py
+    port: 8080
+    # Optional: Add health check if textual-serve provides an endpoint
+    # healthCheckPath: /health
