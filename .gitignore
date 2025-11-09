@@ -55,3 +55,7 @@ rules/
 # Thumbs.db, .DS_Store, etc.
 Thumbs.db
 .DS_Store
+
+# Project-specific data files
+/pokedex.json
+/data/
