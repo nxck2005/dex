@@ -15,7 +15,8 @@ def main() -> None:
 
     # Use textual-serve for web deployment
     port = int(os.environ.get("PORT", 8080))
-    server = Server(command=app_command, port=port, title=app_title)
+    host = os.environ.get("HOST", "0.0.0.0")
+    server = Server(command=app_command, port=port, host=host, title=app_title)
     server.serve()
 
 if __name__ == "__main__":
