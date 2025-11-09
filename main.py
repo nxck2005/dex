@@ -16,7 +16,17 @@ def main() -> None:
     # Use textual-serve for web deployment
     port = int(os.environ.get("PORT", 8080))
     host = os.environ.get("HOST", "0.0.0.0")
-    server = Server(command=app_command, port=port, host=host, title=app_title)
+    
+    public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+    public_url = f"https://{public_domain}" if public_domain else f"http://{host}:{port}"
+    
+    server = Server(
+        command=app_command, 
+        port=port, 
+        host=host, 
+        title=app_title,
+        public_url=public_url
+    )
     server.serve()
 
 if __name__ == "__main__":
