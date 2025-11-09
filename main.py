@@ -10,6 +10,7 @@ def main() -> None:
         version = data["project"]["version"]
 
     app = DexTUI()
+    app.theme = "gruvbox"
     app.title = f"DexTUI v{version}"
     app.run()
 
