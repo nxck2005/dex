@@ -1,12 +1,11 @@
-"""
-This module defines the different screens for the application.
-"""
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Header, Footer, DataTable, Static, Input, Log
 from textual.containers import Horizontal, Vertical
 from textual.binding import Binding
 from textual.widget import Widget
+from rich.text import Text
+import os
 
 from .backend import get_dex_entry, get_all_pokemon
 
@@ -39,6 +38,11 @@ class DexEntryInfo(Static):
 
         self.update(info)
 
+
+class ArtDisplay(Static):
+    """A widget that displays ASCII art of a Pokémon."""
+    pass
+
 # --- Application Screens ---
 
 class DexScreen(Screen):
@@ -54,6 +58,7 @@ class DexScreen(Screen):
         yield Input(placeholder="Search by name or ID...", id="search")
         yield Horizontal(
             DexEntryInfo(id="dex_entry"),
+            ArtDisplay(id="art_display"),
             DataTable(id="pokemon_table"),
         )
         yield Footer()
@@ -96,8 +101,12 @@ class DexScreen(Screen):
             return
 
         entry_id = row_data[0]
-        dex_entry_info = self.query_one(DexEntryInfo)
-        dex_entry_info.update("Loading...")
+        self.query_one(DexEntryInfo).update("Loading...")
+        
+        art_widget = self.query_one(ArtDisplay)
+        art_widget.update("")
+        art_widget.refresh()
+
         self.run_worker(lambda: self.fetch_pokemon_data(entry_id), exclusive=True, thread=True)
 
     def action_focus_search(self) -> None:
@@ -120,8 +129,11 @@ class DexScreen(Screen):
             table.add_row(pokemon["id"], pokemon["name"].capitalize())
 
     def update_dex_entry(self, data: dict) -> None:
-        dex_entry_info = self.query_one(DexEntryInfo)
-        dex_entry_info.update_info(data)
+        self.query_one(DexEntryInfo).update_info(data)
+        
+        art_widget = self.query_one(ArtDisplay)
+        art_widget.update(Text(data.get("ascii_art", "")))
+        art_widget.refresh()
 
 
 class SetupScreen(Screen):

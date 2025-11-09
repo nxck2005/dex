@@ -20,14 +20,22 @@ Horizontal {
 }
 
 DexEntryInfo {
-    width: 50%;
+    width: 35%;
     height: 100%;
     border: round $panel;
     padding: 1;
 }
 
+#art_display {
+    width: 30%;
+    height: 100%;
+    border: round $panel;
+    padding: 1;
+    overflow: auto;
+}
+
 DataTable {
-    width: 50%;
+    width: 35%;
     height: 100%;
     border: round $panel;
     padding: 1;

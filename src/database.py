@@ -23,7 +23,8 @@ def create_tables():
         name TEXT UNIQUE NOT NULL,
         height INTEGER,
         weight INTEGER,
-        flavor_text TEXT
+        flavor_text TEXT,
+        ascii_art TEXT
     );
     """)
 
@@ -163,8 +164,8 @@ def populate_db_from_json():
         for pokemon in all_pokemon_data:
             # 1. Insert into pokemon table
             cursor.execute(
-                "INSERT OR IGNORE INTO pokemon (id, name, height, weight, flavor_text) VALUES (?, ?, ?, ?, ?)",
-                (pokemon['id'], pokemon['name'], pokemon['height'], pokemon['weight'], pokemon.get('flavor_text', ''))
+                "INSERT OR IGNORE INTO pokemon (id, name, height, weight, flavor_text, ascii_art) VALUES (?, ?, ?, ?, ?, ?)",
+                (pokemon['id'], pokemon['name'], pokemon['height'], pokemon['weight'], pokemon.get('flavor_text', ''), pokemon.get('ascii_art', ''))
             )
 
             # 2. Insert into pokemon_app_data
