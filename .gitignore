@@ -58,4 +58,4 @@ Thumbs.db
 
 # Project-specific data files
 /pokedex.json
-/data/
+pokedex.Distribution

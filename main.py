@@ -10,7 +10,7 @@ def main() -> None:
         data = tomllib.load(f)
         version = data["project"]["version"]
 
-    app_command = f"PYTHONPATH=. python -m textual run src.dex_tui:DexTUI"
+    app_command = f"python -m src.dex_tui"
     app_title = f"DexTUI v{version}"
 
     # Use textual-serve for web deployment

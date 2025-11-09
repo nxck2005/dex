@@ -23,3 +23,7 @@ class DexTUI(App):
         else:
             self.push_screen("setup")
 
+
+if __name__ == "__main__":
+    app = DexTUI()
+    app.run()
