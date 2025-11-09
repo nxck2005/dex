@@ -10,6 +10,7 @@ import os
 import httpx
 import io
 import ascii_magic
+from ascii_magic.constants import Front, Back
 
 BASE_URL = "https://pokeapi.co/api/v2"
 JSON_PATH = os.path.join("data", "dex.json")
@@ -45,7 +46,8 @@ async def get_pokemon_details(client: httpx.AsyncClient, pokemon_url: str) -> di
                 
                 # Generate ASCII art
                 image_data = io.BytesIO(sprite_response.content)
-                ascii_art = ascii_magic.from_image(image_data).to_ascii(columns=50)
+                ascii_art_obj = ascii_magic.AsciiArt.from_image(image_data)
+                ascii_art = ascii_art_obj.to_ascii(columns=30, front=Front.WHITE, back=Back.BLACK)
 
             except Exception as art_exc:
                 print(f"\nCould not generate art for {data['name']}: {type(art_exc).__name__} - {art_exc}")
