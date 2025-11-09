@@ -48,12 +48,12 @@ def get_dex_entry(name_or_id: str) -> dict:
         cursor = conn.cursor()
 
         query = """
-            SELECT
-                p.id, p.name, p.height, p.weight, p.flavor_text,
-                s.hp, s.attack, s.defense, s.special_attack, s.special_defense, s.speed,
-                (SELECT GROUP_CONCAT(t.name) FROM pokemon_types pt JOIN types t ON pt.type_id = t.id WHERE pt.pokemon_id = p.id) as types,
-                (SELECT GROUP_CONCAT(a.name) FROM pokemon_abilities pa JOIN abilities a ON pa.ability_id = a.id WHERE pa.pokemon_id = p.id) as abilities
-            FROM pokemon p
+                                                SELECT 
+                                                    p.id, p.name, p.height, p.weight, p.flavor_text, p.ascii_art,
+                                                    s.hp, s.attack, s.defense, s.special_attack, s.special_defense, s.speed, 
+                                                    (SELECT GROUP_CONCAT(t.name) FROM pokemon_types pt JOIN types t ON pt.type_id = t.id WHERE pt.pokemon_id = p.id) as types, 
+                                                    (SELECT GROUP_CONCAT(a.name) FROM pokemon_abilities pa JOIN abilities a ON pa.ability_id = a.id WHERE pa.pokemon_id = p.id)
+                                     as abilities                        FROM pokemon p
             LEFT JOIN stats s ON p.id = s.pokemon_id
             WHERE p.id = ? OR lower(p.name) = ?;
         """
@@ -79,6 +79,7 @@ def get_dex_entry(name_or_id: str) -> dict:
                 "speed": row["speed"],
             },
             "flavor_text": row["flavor_text"],
+            "ascii_art": row["ascii_art"],
         }
 
     except sqlite3.Error:

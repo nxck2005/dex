@@ -8,12 +8,14 @@ import asyncio
 import json
 import os
 import httpx
+import io
+import ascii_magic
 
 BASE_URL = "https://pokeapi.co/api/v2"
 JSON_PATH = os.path.join("data", "dex.json")
 
 async def get_pokemon_details(client: httpx.AsyncClient, pokemon_url: str) -> dict | None:
-    """Fetches detailed information for a single Pokémon."""
+    """Fetches detailed information for a single Pokémon, including ASCII art."""
     try:
         response = await client.get(pokemon_url)
         response.raise_for_status()
@@ -29,6 +31,25 @@ async def get_pokemon_details(client: httpx.AsyncClient, pokemon_url: str) -> di
             if entry["language"]["name"] == "en":
                 flavor_text = entry["flavor_text"].replace("\n", " ").replace("\f", " ")
                 break
+        
+        # --- ASCII Art Generation ---
+        ascii_art = "Art not available."
+        sprite_url = data.get("sprites", {}).get("other", {}).get("official-artwork", {}).get("front_default")
+        if not sprite_url:
+            sprite_url = data.get("sprites", {}).get("front_default")
+
+        if sprite_url:
+            try:
+                sprite_response = await client.get(sprite_url)
+                sprite_response.raise_for_status()
+                
+                # Generate ASCII art
+                image_data = io.BytesIO(sprite_response.content)
+                ascii_art = ascii_magic.from_image(image_data).to_ascii(columns=50)
+
+            except Exception as art_exc:
+                print(f"\nCould not generate art for {data['name']}: {type(art_exc).__name__} - {art_exc}")
+        # --- End ASCII Art Generation ---
 
         return {
             "name": data["name"],
@@ -39,6 +60,7 @@ async def get_pokemon_details(client: httpx.AsyncClient, pokemon_url: str) -> di
             "weight": data["weight"],
             "stats": {s["stat"]["name"]: s["base_stat"] for s in data["stats"]},
             "flavor_text": flavor_text,
+            "ascii_art": ascii_art,
         }
     except httpx.HTTPStatusError as e:
         print(f"Error fetching {pokemon_url}: {e.response.status_code}")
@@ -52,14 +74,14 @@ async def main():
     Main function to fetch all data, process it, and save to a JSON file.
     """
     print("Fetching master Pokémon list...")
-    sem = asyncio.Semaphore(100)  # Limit to 100 concurrent requests
+    sem = asyncio.Semaphore(50)  # Limit to 50 concurrent requests
 
     async def fetch_with_semaphore(client: httpx.AsyncClient, url: str):
         async with sem:
             return await get_pokemon_details(client, url)
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=20.0) as client:
             response = await client.get(f"{BASE_URL}/pokemon?limit=1025")
             response.raise_for_status()
             pokemon_list = response.json()["results"]
