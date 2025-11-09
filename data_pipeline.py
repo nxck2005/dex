@@ -12,6 +12,7 @@ import asyncio
 import json
 import sqlite3
 from pathlib import Path
+import sys
 
 from src.pull_data import main as fetch_api_data
 from src.database import (
@@ -21,7 +22,10 @@ from src.database import (
 
 
 def confirm_step(prompt: str) -> bool:
-    """Gets user confirmation for a given step."""
+    """Gets user confirmation for a given step, or bypasses if --yes is passed."""
+    if "--yes" in sys.argv or "-y" in sys.argv:
+        print(f"{prompt} [y/n]: y (auto-confirmed)")
+        return True
     while True:
         response = input(f"{prompt} [y/n]: ").lower().strip()
         if response in ["y", "yes"]:
