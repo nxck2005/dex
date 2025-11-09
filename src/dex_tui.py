@@ -2,9 +2,10 @@ import os
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Header, Footer, DataTable, Static, Input
+from textual.worker import Worker
 from .backend import get_dex_entry, get_all_pokemon
 
-__version__ = "0.2.1"
+__version__ = "1.0.0"
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class DexEntryInfo(Static):
@@ -14,19 +15,20 @@ class DexEntryInfo(Static):
             self.update(data["error"])
             return
 
-        height_m = data['height'] / 10.0
-        weight_kg = data['weight'] / 10.0
+        height_m = data.get('height', 0) / 10.0
+        weight_kg = data.get('weight', 0) / 10.0
 
         info = (
-            f"[bold]{data['name']} (#{data['id']})[/bold]\n\n"
-            f"Types: {', '.join(data['types'])}\n"
-            f"Abilities: {', '.join(data['abilities'])}\n"
-            f"Height: {height_m} m\n"
-            f"Weight: {weight_kg} kg\n\n"
+            f"[bold]{data.get('name', 'Unknown')} (#{data.get('id', 'N/A')})[/bold]\n\n"
+            f"Types: {', '.join(data.get('types', []))}\n"
+            f"Abilities: {', '.join(data.get('abilities', []))}\n"
+            f"Height: {height_m:.1f} m\n"
+            f"Weight: {weight_kg:.1f} kg\n\n"
             "[bold]Stats:[/bold]\n"
         )
-        for stat, value in data["stats"].items():
-            info += f"- {stat.capitalize()}: {value}\n"
+        stats = data.get("stats", {})
+        for stat, value in stats.items():
+            info += f"- {stat.replace('_', '-').capitalize()}: {value}\n"
         
         if data.get("flavor_text"):
             info += f"\n[bold]Dex Entry:[/bold]\n{data['flavor_text']}\n"
@@ -54,52 +56,71 @@ class DexTUI(App):
         )
         yield Footer()
 
-    async def on_mount(self) -> None:
+    def on_mount(self) -> None:
         table = self.query_one(DataTable)
         table.cursor_type = "row"
         table.add_columns("ID", "Name")
-        self.all_pokemon = await get_all_pokemon()
-        for i, pokemon in enumerate(self.all_pokemon):
-            table.add_row(i + 1, pokemon["name"].capitalize())
+        self.run_worker(self.load_initial_data, exclusive=True, thread=True)
 
-    async def on_input_changed(self, message: Input.Changed) -> None:
+    def on_input_changed(self, message: Input.Changed) -> None:
+        if not self.all_pokemon:
+            return
+        
         table = self.query_one(DataTable)
         search_term = message.value.lower()
+        
         table.clear()
-        for i, pokemon in enumerate(self.all_pokemon):
-            if search_term in pokemon["name"] or search_term == str(i + 1):
-                table.add_row(i + 1, pokemon["name"].capitalize())
+        for pokemon in self.all_pokemon:
+            if search_term in pokemon["name"].lower() or search_term == str(pokemon["id"]):
+                table.add_row(pokemon["id"], pokemon["name"].capitalize())
 
-    async def on_input_submitted(self, message: Input.Submitted) -> None:
-        try:
-            num = int(message.value)
-            if num > 1025:
-                dex_entry_info = self.query_one(DexEntryInfo)
-                dex_entry_info.update("Loading...")
-                data = await get_dex_entry(str(num))
-                dex_entry_info.update_info(data)
-                return
-        except ValueError:
-            pass
-
+    def on_input_submitted(self, message: Input.Submitted) -> None:
         table = self.query_one(DataTable)
         if table.rows:
             table.move_cursor(row=0)
-            await self.action_select_pokemon()
+            self.action_select_pokemon()
 
-    async def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        await self.action_select_pokemon()
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        self.action_select_pokemon()
 
-    async def action_select_pokemon(self) -> None:
+    def action_select_pokemon(self) -> None:
         table = self.query_one(DataTable)
         if not table.rows:
             return
             
         row_key = table.cursor_row
-        row = table.get_row_at(row_key)
-        entry_name = row[1]
+        row_data = table.get_row_at(row_key)
+        if not row_data:
+            return
+            
+        entry_id = row_data[0]
         
         dex_entry_info = self.query_one(DexEntryInfo)
         dex_entry_info.update("Loading...")
-        data = await get_dex_entry(entry_name)
+        self.run_worker(lambda: self.fetch_pokemon_data(entry_id), exclusive=True, thread=True)
+
+    # --- Worker Methods ---
+
+    def load_initial_data(self) -> None:
+        """Worker to load all Pokémon names from the backend."""
+        pokemon_list = get_all_pokemon()
+        self.call_from_thread(self.update_pokemon_table, pokemon_list)
+
+    def fetch_pokemon_data(self, pokemon_id: int) -> None:
+        """Worker to fetch detailed data for a single Pokémon."""
+        data = get_dex_entry(pokemon_id)
+        self.call_from_thread(self.update_dex_entry, data)
+
+    # --- UI Update Methods ---
+
+    def update_pokemon_table(self, pokemon_list: list[dict]) -> None:
+        """Called from worker to update the main data table."""
+        self.all_pokemon = pokemon_list
+        table = self.query_one(DataTable)
+        for pokemon in self.all_pokemon:
+            table.add_row(pokemon["id"], pokemon["name"].capitalize())
+
+    def update_dex_entry(self, data: dict) -> None:
+        """Called from worker to update the dex entry info panel."""
+        dex_entry_info = self.query_one(DexEntryInfo)
         dex_entry_info.update_info(data)

@@ -13,8 +13,8 @@ async def main():
         if "error" not in data:
             all_pokemon_data.append(data)
 
-    print("Saving data to pokedex.json...")
-    with open("pokedex.json", "w") as f:
+    print("Saving data to dex.json...")
+    with open("dex.json", "w") as f:
         json.dump(all_pokemon_data, f, indent=2)
     print("Done.")
 
